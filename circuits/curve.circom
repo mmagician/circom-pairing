@@ -362,18 +362,26 @@ template EllipticCurveAdd(n, k, a1, b1, p){
     }
 }
 
-function decompose_scalar(x) {
-    // TODO fill this in
-    var X = -15132376222941642752;
-    return [1, 2];
-    // var b1 = [x^2 - 1, -1];
-    // var b2 = [1, x^2];
+function decompose_scalar(m) {
+    // Guide to Pairing Based Cryptography
+    // 6.3.2. Decompositions for the k = 12 BLS Family
 
-    // alpha1 = nearest_int(x ** 2 * x / r)
-    // alpha2 = nearest_int(x / r)
-    // (x1, x2) = (x, 0) - alpha1 * b1 - alpha2 * b2;
-    
-    // return x1, x2;
+    var xSquare = 228988810152649578064853576960394133504;
+    var r = 52435875175126190479447740508185965837690552500527637822603658699938581184513;
+
+    // Compute b1 and b2
+    var b1 = [xSquare - 1, -1];
+    var b2 = [1, xSquare];
+
+    // Compute alpha1 and alpha2, rounding to the nearest integer
+    var alpha1 = ((xSquare * m * 2) + r) / (2 * r);
+    var alpha2 = ((m * 2) + r) / (2 * r);
+
+    // Compute k1 and k2
+    var k1 = m - alpha1 * b1[0] - alpha2 * b2[0];
+    var k2 = -alpha1 * b1[1] - alpha2 * b2[1];
+
+    return [ k1, k2 ];
 }
 
 // Elliptic curve scalar multiplication using the GLV algorithm
