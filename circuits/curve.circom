@@ -362,6 +362,53 @@ template EllipticCurveAdd(n, k, a1, b1, p){
     }
 }
 
+function decompose_scalar(x) {
+    // TODO fill this in
+    var X = -15132376222941642752;
+    return [1, 2];
+    // var b1 = [x^2 - 1, -1];
+    // var b2 = [1, x^2];
+
+    // alpha1 = nearest_int(x ** 2 * x / r)
+    // alpha2 = nearest_int(x / r)
+    // (x1, x2) = (x, 0) - alpha1 * b1 - alpha2 * b2;
+    
+    // return x1, x2;
+}
+
+// Elliptic curve scalar multiplication using the GLV algorithm
+template EllipticCurveScalarMultiplyGLV(n, k, b, x, p, lambda) {
+    signal input in[2][k];
+    signal input inIsInfinity;
+
+    signal output out[2][k];
+    signal output isInfinity;
+
+    // var not_lambda = 52435875175126190479447740508185965837461563690374988244538805122978187051009;
+    // Step 1.
+    // need to decompose the scalar x into x1 and x2 such that x = x1 + x2 * lambda
+    // and where x1 & x2 have small magnitudes (~1/2 bit length of x)
+    // TODO only need to constrain that x = x1 + x2 * lambda:
+    var decomposition = decompose_scalar(x);
+    var x1 = decomposition[0];
+    var x2 = decomposition[1];
+    // signal rhs <== x1 + x2 * lambda;
+    // component is_decomposition_equal = IsEqual();
+    // is_decomposition_equal.in[0] <== rhs;
+    // is_decomposition_equal.in[1] <== x;
+
+    // Step 2.
+    // TODO apply endomorphism \phi to P to get Q
+
+
+    // Step 3.
+    // some kind of multi-scalar multiplication using x1 & x2
+    // TODO Algorithm 1 from https://www.iacr.org/archive/crypto2001/21390189.pdf
+
+
+
+}
+
 // Curve E : y^2 = x^3 + b
 // Inputs:
 //  in is 2 x k array where P = (x, y) is a point in E(Fp) 

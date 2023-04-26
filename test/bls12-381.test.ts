@@ -157,6 +157,61 @@ describe("BLS12-381 Double", function () {
   test_cases.forEach(test_bls12381_double_instance);
 });
 
+describe("BLS12-381 Scalar Multiply by 2", function () {
+  this.timeout(1000 * 1000);
+
+  // runs circom compilation
+  let circuit: any;
+  before(async function () {
+    circuit = await wasm_tester(
+      path.join(__dirname, "circuits", "test_bls12-381_scalar_mul.circom")
+    );
+  });
+
+  // pub0x, pub0y, outx, outy
+  var test_cases: Array<[[bigint, bigint], [bigint, bigint]]> = [];
+
+  for (var test = 0; test < 10; test++) {
+    var pubkey: PointG1 = PointG1.fromPrivateKey(bls.utils.randomPrivateKey());
+    var sum: PointG1 = pubkey.double();
+    test_cases.push([point_to_bigint(pubkey), point_to_bigint(sum)]);
+  }
+
+  var test_bls12381_scalar_mul_instance = function (
+    test_case: [[bigint, bigint], [bigint, bigint]]
+  ) {
+    let [pubx, puby] = test_case[0];
+    let [outx, outy] = test_case[1];
+
+    var n: number = 55;
+    var k: number = 7;
+    var pubx_array: bigint[] = bigint_to_array(n, k, pubx);
+    var puby_array: bigint[] = bigint_to_array(n, k, puby);
+    var outx_array: bigint[] = bigint_to_array(n, k, outx);
+    var outy_array: bigint[] = bigint_to_array(n, k, outy);
+
+    it(
+      "Testing x: " +
+        pubx +
+        " y: " +
+        puby +
+        " outx: " +
+        outx +
+        " outy: " +
+        outy,
+      async function () {
+        let witness = await circuit.calculateWitness({
+          in: [pubx_array, puby_array],
+        });
+        await circuit.assertOut(witness, { out: [outx_array, outy_array] });
+        await circuit.checkConstraints(witness);
+      }
+    );
+  };
+
+  test_cases.forEach(test_bls12381_scalar_mul_instance);
+});
+
 describe("BLS12-381 AddThree Inverses", function () {
   this.timeout(1000 * 1000);
 
