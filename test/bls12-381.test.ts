@@ -377,3 +377,47 @@ describe("BLS12-381 EllipticCurveAdd Special Cases", function () {
   test_cases.forEach(test_bls12381_addtwo_instance);
 });
 
+describe("decompose_scalar", function () {
+    this.timeout(1000 * 1000);
+
+    // @todo GPT-4 generated test vectors, are supposed to cover integer overflows and modular wrap-around
+    const test_vectors = [
+        {
+            input: 1000,
+            expected: [BigInt(-24196568859876786684069315881), BigInt(-27597828093890249063121714816)],
+        },
+        {
+            input: BigInt("5243587517512619047944774050818596583769055250052763782260365869993858118451300"),
+            expected: [BigInt(0), BigInt("999999999999999999999999999999999999999")],
+        },
+        {
+            input: BigInt("1234567890123456789012345678901234567890"),
+            expected: [BigInt(-630308522730554874802073085), BigInt("1612150363149276417783761660")],
+        },
+        {
+            input: BigInt("9876543210987654321098765432109876543210987654321"),
+            expected: [BigInt("4961699522706640992597583831"), BigInt("2454238634329031126305099314")],
+        },
+        {
+            input: 0,
+            expected: [BigInt(0), BigInt(0)],
+        },
+        {
+            input: 1,
+            expected: [BigInt(-228988810152649578064853576960394133503), BigInt(1)],
+        },
+        {
+            input: BigInt("52435875175126190479447740508185965837690552500527637822603658699938581184512"),
+            expected: [BigInt(-1), BigInt("228988810152649578064853576960394133503")],
+        },
+    ];
+
+    test_vectors.forEach((test, index) => {
+        it(`Test ${index + 1}: input = ${test.input}`, async function () {
+          // @todo do we also need to instantiate the circuit even if it's just a function
+            const result = decompose_scalar(test.input);
+            expect(result[0]).to.equal(test.expected[0]);
+            expect(result[1]).to.equal(test.expected[1]);
+        });
+    });
+});

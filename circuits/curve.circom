@@ -408,13 +408,61 @@ template EllipticCurveScalarMultiplyGLV(n, k, b, x, p, lambda) {
     // Step 2.
     // TODO apply endomorphism \phi to P to get Q
 
-
     // Step 3.
     // some kind of multi-scalar multiplication using x1 & x2
     // TODO Algorithm 1 from https://www.iacr.org/archive/crypto2001/21390189.pdf
 
 
+    // ChatGPT says this is the way to go:
 
+    // Step 2.
+    // Compute P1 = k1 * in
+    component scalarMult1 = EllipticCurveScalarMultiply(n, k, b, k1, p);
+    scalarMult1.in <== in;
+    scalarMult1.inIsInfinity <== inIsInfinity;
+
+    // Step 3.
+    // Compute P2 = k2 * psi(in), where psi is the endomorphism
+    // First, apply the endomorphism psi to the input point in
+    var psiIn = [in[0] * lambda, in[1]]; // Apply the endomorphism to in
+
+    // Now multiply the transformed point psiIn by k2
+    component scalarMult2 = EllipticCurveScalarMultiply(n, k, b, k2, p);
+    scalarMult2.in <== psiIn;
+    scalarMult2.inIsInfinity <== inIsInfinity;
+
+    // Step 4.
+    // Compute P = P1 + P2
+    component pointAdd = EllipticCurveAdd(n, k, scalarMult1.out, scalarMult2.out, p);
+    pointAdd.inIsInfinity <== 0; // The result of scalar multiplication should never be the point at infinity
+
+    // Set the output
+    out <== pointAdd.out;
+    isInfinity <== pointAdd.isInfinity;
+
+    // And here its reasoning:
+    /* Your colleague's approach appears to be based on the general idea of the GLV method but might be following
+    a slightly different algorithm. The GLV method for scalar multiplication consists of several variations and
+    optimizations, which can result in different implementations. The approach provided earlier is a specific
+    implementation tailored for the k = 12 BLS family of curves, which is the most common use case.
+
+    In the TO-DOs left by your colleague, they mention applying the endomorphism φ (phi) to P (input point) to
+    get Q (transformed point) in Step 2, which is similar to the psi function used earlier. This is a general idea
+    in GLV scalar multiplication, where an endomorphism is applied to the base point before performing the
+    multi-scalar multiplication.
+
+    For Step 3, your colleague refers to Algorithm 1 from the paper "Faster Point Multiplication on Elliptic Curves
+    with Efficient Endomorphisms" by Gallant, Lambert, and Vanstone (2001). This paper is the original source of the
+    GLV method and provides a general algorithm for efficiently performing scalar multiplication on elliptic curves
+    using endomorphisms. The algorithm presented in the paper is more general and can be applied to a broader range
+    of curves with different endomorphism properties.
+
+    In summary, the approach provided earlier is a specific implementation of the GLV method for the k = 12 BLS
+    family of curves, while your colleague's approach seems to follow a more general algorithm from the original
+    GLV paper. Depending on the curve you're working with and the endomorphism properties, you may need to adapt the
+    implementation provided earlier or follow your colleague's approach to match your specific use case. */
+
+    // @todo check if its BS
 }
 
 // Curve E : y^2 = x^3 + b
